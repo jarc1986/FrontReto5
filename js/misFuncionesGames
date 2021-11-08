@@ -1,0 +1,218 @@
+function autoInicioCategory() {
+    console.log("Se esta ejecutando el autoinicio de Category...");
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Category/all",
+        //url: "http://localhost:8080/api/Category/all",
+        type: "GET",
+        datatype: "JSON",
+        success: function (response) {
+
+            let $select = $("#select-category");
+            $.each(response, function (id, name) {
+                $select.append('<option value=' + name.id + '>' + name.name + '</option>');
+                console.log("select " + name.id);
+            });
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) { }
+    });
+}
+
+//Manejador "POST"
+function guardarInformacionGame() {
+
+    if($("#Gname").val().length == 0 || $("#Gdeveloper").val().length == 0 || $("#Gyear").val().length == 0 || $("#Gdescription").val().length == 0){
+       alert("Todos los campos son obligatorios")
+    }else{
+
+         let elemento = {
+            name: $("#Gname").val(),
+                developer: $("#Gdeveloper").val(),
+                year: $("#Gyear").val(),
+                description: $("#Gdescription").val(),
+                category:{id: +$("#select-category").val()},
+            }
+
+            let dataToSend = JSON.stringify(elemento);
+            console.log(elemento);
+
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url:"http://144.22.232.91:8080/api/Game/save",
+                //url: "http://localhost:8080/api/Skate/save",
+                data: dataToSend,
+                datatype: 'json',
+
+                success: function (response) {
+                    console.log(response);
+                    console.log("Se guardo Correctamente");
+                    //Limpiar Campos
+                    $("#resultado2").empty();
+                    $("#Gname").val("");
+                    $("#Gdeveloper").val("");
+                    $("#Gyear").val("");
+                    $("#Gdescription").val("");
+                    
+
+                    //Listar Tabla
+
+                    alert("Se ha guardado Correctamente!")
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("No se Guardo Correctamente")
+                }
+            });
+    }
+}
+
+//Manejador GET
+function traerInformacionGame() {
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Game/all",
+        //url: "http://localhost:8080/api/Skate/all",
+        headers:{
+            'Access-Control-Allow-Origin':'*'
+        },
+        type: "GET",
+        datatype: "JSON",
+        success: function (response) {
+            console.log(response);
+            pintarRespuestaGame(response);
+        }
+
+    });
+
+}
+
+function pintarRespuestaGame(items){
+    let mytable="<table>";
+        myTable+="<tr>";
+        myTable+="<td>Nombre</td>";
+        myTable+="<td>Desarrollador</td>";
+        myTable+="<td>Año</td>";
+        myTable+="<td>Descripcion</td>";
+        myTable+="<td>Categoria</td>";
+    "</tr>";
+
+    for(i=0; i<items.length; i++){
+        mytable += "<tr>";
+        mytable+="<td>"+items[i].name+"</td>";
+        mytable+="<td>"+items[i].developer+"</td>";
+        mytable+="<td>"+items[i].year+"</td>";
+        mytable+="<td>"+items[i].description+"</td>";
+        myTable+='<td><button class = "botonSkate2" onclick="borrarGame(' + items[i].id + ')">Borrar Game!</button></td>';
+        myTable+='<td><button class = "botonSkate2" onclick="cargarDatosGame(' + items[i].id + ')">Cargar Datos!</button></td>';
+        myTable+='<td><button class = "botonSkate2" onclick="actualizarGame(' + items[i].id + ')">Actualizar Game!</button></td>';
+        mytable += "</tr>";
+    }
+    mytable += "</table>";
+    $("#resultado2").html(mytable);
+}
+
+//Manejador DELETE
+function borrarGame(idElemento) {
+    var elemento = {
+        id: idElemento
+    }
+
+    var dataToSend = JSON.stringify(elemento);
+
+    $.ajax(
+        {
+            dataType: 'json',
+            data: dataToSend,
+            url:"http://144.22.232.91:8080/api/Game/"+idElemento,
+            //url: "http://localhost:8080/api/Skate/" + idElemento,
+            type: 'DELETE',
+            contentType: "application/JSON",
+            success: function (response) {
+                console.log(response);
+                $("#resultado2").empty();
+
+                alert("se ha Eliminado Correctamente!")
+            },
+
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("No se Elimino Correctamente!")
+            }
+        });
+}
+
+//Capturar informacion para Actualizar
+function cargarDatosGame(id) {
+    $.ajax({
+        dataType: 'json',
+        url:"http://144.22.232.91:8080/api/Game/"+id,
+        //url: "http://localhost:8080/api/Skate/" + id,
+        type: 'GET',
+
+        success: function (response) {
+            console.log(response);
+            var item = response;
+
+            $("#id").val(item.id);
+            $("#Gname").val(item.name);
+            $("#Gdeveloper").val(item.brand);
+            $("#Gyear").val(item.year);
+            $("#Gdescription").val(item.description);
+
+        },
+
+        error: function (jqXHR, textStatus, errorThrown) {
+
+        }
+    });
+}
+
+//Manejador PUT
+function actualizarGame(idElemento) {
+    
+    if($("#Gname").val().length == 0 || $("#Gdeveloper").val().length == 0 || $("#Gyear").val().length == 0 || $("#Gdescription").val().length == 0){
+        alert("Todos los campos son obligatorios")
+    }else{
+        let elemento = {
+            id: idElemento,
+            name: $("#Gname").val(),
+            brand: $("#Gdeveloper").val(),
+            year: $("#Gyear").val(),
+            description: $("#Gdescription").val(),
+            category:{id: +$("#select-category").val()},
+        }
+
+        console.log(elemento);
+        let dataToSend = JSON.stringify(elemento);
+
+        $.ajax({
+            datatype: 'json',
+            data: dataToSend,
+            contentType: "application/JSON",
+            url:"http://144.22.232.91:8080/api/Game/update",
+            //url: "http://localhost:8080/api/Skate/update",
+            type: "PUT",
+
+            success: function (response) {
+                console.log(response);
+                $("#resultado2").empty();
+                traerInformacionGame();
+                alert("se ha Actualizado Correctamente!")
+
+                //Limpiar Campos
+                $("#resultado2").empty();
+                $("#id").val("");
+                $("#Gname").val("");
+                $("#Gdeveloper").val("");
+                $("#Gyear").val("");
+                $("#Gdescription").val("");
+
+
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("No se Actualizo Correctamente!")
+            }
+        });
+    }
+}
+
+
+

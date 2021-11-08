@@ -1,0 +1,130 @@
+function autoInicioCliente(){
+    console.log("se esta ejecutando")
+    $.ajax({
+        url:"http://168.138.247.22:80/api/Client/all",
+        type:"GET",
+        datatype:"JSON",
+        success:function(respuesta){
+            console.log(respuesta);
+            pintarRespuesta2(respuesta);
+        }
+    
+    })
+
+}
+
+function traerInformacionClient(){
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Client/all",
+        headers:{
+            'Access-Control-Allow-Origin':'*'
+        },
+        type: "GET",
+        datatype: "JSON",
+        success:function(respuesta){
+            console.log(respuesta);
+            pintarRespuestaClient(respuesta);            
+        },
+        
+    });
+
+}
+
+function pintarRespuestaClient(items){
+    let mytable="<table>";
+    for(i=0; i<items.length; i++){
+        mytable += "<tr>";
+        mytable+="<td>"+items[i].email+"</td>";
+        mytable+="<td>"+items[i].password+"</td>";
+        mytable+="<td>"+items[i].name+"</td>";
+        mytable+="<td>"+items[i].age+"</td>";
+        mytable += "<td> <button onclick='eliminarElementoClient("+ items[i].idClient + ")'>Borrar</button></td>";
+        mytable += "<td> <button onclick='editarInformacionClient("+ items[i].idClient + ")'>Actualizar</button></td>";
+        mytable += "</tr>";
+    }
+    mytable += "</table>";
+    $("#resultado3").html(mytable);
+}
+
+function guardarInformacionClient(){
+    let var4={
+        email:$("#CLemail").val(),
+        password:$("#CLpassword").val(),
+        name:$("#CLname").val(),
+        age:$("#CLage").val(),      
+    };
+        console.log(var4);
+    $.ajax({       
+        type:"POST",
+        contentType:"application/JSON; charset=utf-8",
+        datatype:"JSON",
+        data:JSON.stringify(var4),
+        url:"http://144.22.232.91:8080/api/Client/save",
+        success:function(response){
+                console.log(response);
+            console.log("Se guardo correctamente")
+            alert("Informacion guardada satisfactoriamente")
+            window.location.reload()
+        }, 
+        error: function (jqXHR, textStatus, errorThrown) {
+            window.location.reload()
+            alert("Informacion NO se guardado satisfactoriamente")
+            
+        }     
+    });
+}
+
+function editarInformacionClient(){
+    let myData={
+        email:$("#CLemail").val(),
+        password:$("#CLpassword").val(),
+        name:$("#CLname").val(),
+        age:$("#CLage").val(), 
+    };
+        console.log(myData);
+        let dataToSend=JSON.stringify(myData);
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Client/update",
+        type:"PUT",
+        data:dataToSend,
+        contentType:"application/JSON",
+        datatype:"JSON",
+        success:function(respuesta){
+            $("#resultado3").empty();
+            $("#CLemail").val(""),
+            $("#CLpassword").val(""),
+            $("#CLname").val(""),
+            $("#CLage").val(""),
+            autoInicioCliente();
+            alert("La informacion del juego se edito satisfactoriamente")
+        },
+        error: function (xhr, status) {
+            console.log(status);
+            
+        }  
+    });
+}
+
+function eliminarElementoClient(idElemento){
+    let myData={
+        id:idElemento
+    };
+        let dataToSend=JSON.stringify(myData);
+        console.log(dataToSend);
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Client/" + idElemento,
+        type:"DELETE",
+        data:dataToSend,
+        contentType:"application/JSON",
+        success:function(respuesta){
+            $("#resultado3").empty();
+            autoInicioCliente();
+            alert("La informacion del juego se elimino satisfactoriamente")
+        },  
+        error: function (xhr, status) {
+            console.log(status);
+            
+        }
+
+    });
+}

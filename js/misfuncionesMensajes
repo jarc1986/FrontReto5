@@ -1,0 +1,153 @@
+function autoinicioRelacionCliente() {
+    console.log("Se esta ejecutando el autoinicio de Client...");
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Client/all",
+        type: "GET",
+        datatype: "JSON",
+        success: function (response) {
+
+            let $select = $("#select-Client");
+            $.each(response, function (id, name) {
+                $select.append('<option value=' + name.idClient + '>' + name.name + '</option>');
+                console.log("select " + name.idClient);
+            });
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) { }
+    });
+}
+
+function autoinicioRelacionGames() {
+    console.log("Se esta ejecutando el autoinicio de Client...");
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Game/all",
+        type: "GET",
+        datatype: "JSON",
+        success: function (response) {
+
+            let $select = $("#select-Game");
+            $.each(response, function (id, name) {
+                $select.append('<option value=' + name.id + '>' + name.name + '</option>');
+                console.log("select " + name.id);
+            });
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) { }
+    });
+}
+
+function autoInicioMensajes(){
+    console.log("se esta ejecutando")
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Message/all",
+        type:"GET",
+        datatype:"JSON",
+        success:function(respuesta){
+            console.log(respuesta);
+            pintarRespuesta2(respuesta);
+        }
+    
+    })
+
+}
+
+function pintarRespuestaMessage(items){
+    let mytable="<table>";
+    for(i=0; i<items.length; i++){
+        mytable += "<tr>";
+        mytable += "<td>" + items[i].messagetext + "</td>";
+        mytable += "<td>" + items[i].Game.name + "</td>";
+        mytable += "<td>" + items[i].Client.name + "</td>";
+
+        mytable += "<td> <button onclick='eliminarElementoMessage("+ items[i].messagetext + ")'>Borrar</button></td>";
+        myTable+="<td> <button onclick=' editarInformacionMensaje("+respuesta[i].idMessage+")'>Actualizar</button>";
+       
+        mytable += "</tr>";
+    }
+    mytable += "</table>";
+    $("#resultado5").html(mytable);
+}
+
+function guardarInformacionMessage(){
+    
+    if($("#Mmessagetext").val().length==0){
+        alert("Todos los campos son obligatorios");
+    }else{
+          
+    let var5 = {
+        messagetext:$("#Mmessagetext").val(),
+        Game:{id: +$("#select-Game").val()},
+        client:{idClient: +$("#select-Client").val()},
+
+    };
+        console.log(var5);
+        
+    $.ajax({
+        type:"POST",
+        contentType:"application/JSON; charset=utf-8",
+        datatype:"JSON",
+        data:JSON.stringify(var5),
+        url:"http://144.22.232.91:8080/api/Message/save",
+        success: function(response){
+                console.log(response)
+            console.log("Se guardo correctamente")
+            alert("Informacion guardada satisfactoriamente")
+            window.location.reload()
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            window.location.reload()
+            alert("Informacion NO se guardado satisfactoriamente")   
+        }  
+    });}
+}
+
+function editarInformacionMessage(){
+    let myData={
+        messagetext:$("#Mmessagetext").val(),
+        Game:{id: +$("#select-Game").val()},
+        client:{idClient: +$("#select-Client").val()},
+    };
+        console.log(myData)
+        let dataToSend=JSON.stringify(myData);
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Message/update",
+        type:"PUT",
+        data:dataToSend,
+        contentType:"application/JSON",
+        datatype:"JSON",
+        success:function(respuesta){
+            $("#resultado5").empty();
+            $("#Mmessagetext").val(""),
+            autoInicioMensajes();
+            alert("El mensaje se actualizo satisfactoriamente")
+        },
+        error: function (xhr, status) {
+            console.log(status);
+            
+        }  
+    });
+}
+
+function eliminarElementoMessage(idElemento){
+    let myData={
+        id:idElemento
+    };
+        let dataToSend=JSON.stringify(myData);
+        console.log(dataToSend);
+    $.ajax({
+        url:"http://144.22.232.91:8080/api/Message/" +idElemento,
+        type:"DELETE",
+        data:dataToSend,
+        contentType:"application/JSON",
+        success:function(respuesta){
+            $("#resultado5").empty();
+            traerInformacionMessage();
+            alert("Informacion Eliminada")
+        },  
+        error: function (xhr, status) {
+            console.log(status);
+            
+        }
+
+    });
+}
